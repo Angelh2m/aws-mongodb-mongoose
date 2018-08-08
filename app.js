@@ -3,8 +3,9 @@ const express = require('express')
 const app = express();
 
 const { keys } = require('./keys');
-const mongoose = require('mongoose');
 const { User } = require('./schemas/User');
+
+const mongoose = require('mongoose');
 
 const gravatar = require('gravatar');
 const bcrypt = require('bcryptjs');

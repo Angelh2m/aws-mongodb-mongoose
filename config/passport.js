@@ -18,7 +18,6 @@ module.exports = (passport) => {
         console.log('PAYLOAD', jwt_payload.id);
 
         User.findOne({ _id: jwt_payload.id }, (err, user) => {
-            console.log(user);
 
             if (err) {
                 return done(err, false);
