@@ -15,9 +15,10 @@ const { User } = require('../../schemas/User');
 // @access  Public
 router.post('/register', (req, res) => {
 
-    User.findOne({
-        email: req.body.email
-    }).then((user) => {
+    User.findOne(
+        { "info.email": req.body.email }
+    ).then((user) => {
+
         if (user) {
             var errors = 'Email already exists';
             return res.status(400).json(errors);
@@ -30,16 +31,19 @@ router.post('/register', (req, res) => {
             });
 
             const newUser = new User({
-                name: req.body.name,
-                email: req.body.email,
-                avatar,
-                password: req.body.password
+                info: {
+                    firstName: req.body.name,
+                    email: req.body.email,
+                    avatar,
+                    password: req.body.password
+                }
             });
 
             bcrypt.genSalt(10, (err, salt) => {
-                bcrypt.hash(newUser.password, salt, (err, hash) => {
+                bcrypt.hash(newUser.info.password, salt, (err, hash) => {
                     if (err) throw err;
-                    newUser.password = hash;
+
+                    newUser.info.password = hash;
                     newUser
                         .save()
                         .then((user) => res.json(user))
@@ -55,10 +59,13 @@ router.post('/register', (req, res) => {
 // @desc    Login the user // Provide token to user
 // @access  Public
 router.post('/login', (req, res) => {
-    const email = req.body.email;
+
     const password = req.body.password;
 
-    User.findOne({ email }).then((user) => {
+    User.findOne(
+        { "info.email": req.body.email }
+    ).then((user) => {
+
         if (!user) {
             return res.status(404).json({
                 email: 'User not found'
@@ -66,13 +73,13 @@ router.post('/login', (req, res) => {
         }
 
         // Check if the password is correct
-        bcrypt.compare(password, user.password).then((isMatch) => {
+        bcrypt.compare(password, user.info.password).then((isMatch) => {
             if (isMatch) {
                 // User match
                 const payload = {
                     id: user.id,
-                    name: user.name,
-                    avatar: user.avatar
+                    name: user.info.name,
+                    avatar: user.info.avatar
                 }; // Create jwt payload
 
                 // Sign the token
