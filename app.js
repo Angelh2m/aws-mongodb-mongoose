@@ -13,11 +13,9 @@ const jwt = require('jsonwebtoken');
 const passport = require('passport');
 
 /* *
- *  PASSPORT STRATEGIES
+ *  Use the express.json instead of bodyparser
  */
-app.use(passport.initialize());
-require('./config/passport')(passport);
-require('./config/passport-google')(passport);
+app.use(express.urlencoded({ extended: true }));
 
 /* *
  *  Connect to MongoDB
@@ -27,15 +25,18 @@ mongoose.connect(keys.mongoURL, { useNewUrlParser: true })
     .catch(err => err);
 
 /* *
- *  Use the express.json instead of bodyparser
+ *  PASSPORT STRATEGIES
  */
-app.use(express.urlencoded({ extended: true }));
+app.use(passport.initialize());
+require('./config/passport')(passport);
+require('./config/passport-google')(passport);
+
 
 
 // @route   GET /
 // @desc    Get TEST route
 // @access  Public
-app.get('/', function(req, res) {
+app.get('/', function (req, res) {
 
     User.findOne({})
         .then(result => {
@@ -93,7 +94,6 @@ app.post('/register', (req, res) => {
 // @route   GET api/users/login
 // @desc    Login the user // Provide token to user
 // @access  Public
-
 app.post('/login', (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
@@ -141,12 +141,11 @@ app.post('/login', (req, res) => {
 // @desc    Return current user // Protected route using token
 // @access  Private
 app.get('/logged-user', passport.authenticate('jwt', {
-        session: false
-    }),
+    session: false
+}),
     (req, res) => {
 
         req.user.password = ":)";
-
         res.json({
             user: req.user
         })
@@ -159,9 +158,8 @@ app.get('/logged-user', passport.authenticate('jwt', {
 
 module.exports.handler = serverless(app);
 
+// const port = process.env.PORT || 6000;
 
-const port = process.env.PORT || 6000;
-
-app.listen(port, () => {
-    console.log('Server Running');
-});
+// app.listen(port, () => {
+//     console.log('Server Running');
+// });
