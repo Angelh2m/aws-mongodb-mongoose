@@ -33,23 +33,6 @@ require('./config/passport-google')(passport);
 
 
 
-// @route   GET /
-// @desc    Get TEST route
-// @access  Public
-app.get('/', function (req, res) {
-
-    User.findOne({})
-        .then(result => {
-            console.log(result);
-            return res.status(200).json({
-                ok: true,
-                result
-            })
-        }).catch(err => err);
-
-});
-
-
 // @route   POST api/users/register
 // @desc    Register route
 // @access  Public
@@ -140,26 +123,28 @@ app.post('/login', (req, res) => {
 // @route   GET api/users/current
 // @desc    Return current user // Protected route using token
 // @access  Private
-app.get('/logged-user', passport.authenticate('jwt', {
+app.get('/profile', passport.authenticate('jwt', {
     session: false
 }),
     (req, res) => {
-
         req.user.password = ":)";
         res.json({
             user: req.user
         })
     }
-
 );
 
-
+// @Routes 
+//  Register a new user => /register
+//  Login a user => /login
+//  Get user profile  => /profile
 
 
 module.exports.handler = serverless(app);
 
-// const port = process.env.PORT || 6000;
 
-// app.listen(port, () => {
-//     console.log('Server Running');
-// });
+const port = process.env.PORT || 6000;
+
+app.listen(port, () => {
+    console.log('Server Running');
+});
