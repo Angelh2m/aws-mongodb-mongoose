@@ -7,8 +7,7 @@ const { keys } = require('./keys');
 const passport = require('passport');
 const mongoose = require('mongoose');
 const users = require('./routes/api/usersRegistration')
-
-
+const recover = require('./routes/api/userRecover')
 
 /* *
  *  Set up cors
@@ -36,11 +35,12 @@ require('./config/passport-google')(passport);
 
 
 app.use('/api', users);
+app.use('/api', recover);
 
 // @Routes 
-//  Register a new user => /register
-//  Login a user => /login
-//  Get user profile  => /profile
+//  Register a new user => api/register
+//  Login a user => api/login
+//  Get user profile  => api/profile
 
 
 module.exports.handler = serverless(app);

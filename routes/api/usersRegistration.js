@@ -1,14 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const mongoose = require('mongoose');
-
 
 const gravatar = require('gravatar');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 
-const { keys } = require('../../keys');
+const { keys } = require('../../keys'); //JWT KEY
 const { User } = require('../../schemas/User');
 
 
