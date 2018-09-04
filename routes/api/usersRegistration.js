@@ -14,44 +14,45 @@ const { User } = require('../../schemas/User');
 // @desc    Register route
 // @access  Public
 router.post('/register', (req, res) => {
+    let email = req.body.email.toLowerCase();
 
-    User.findOne(
-        { "info.email": req.body.email }
-    ).then((user) => {
+    User.findOne({ email })
+        .then((user) => {
 
-        if (user) {
-            var errors = 'Email already exists';
-            return res.status(400).json(errors);
-        } else {
-            // Get the gravatar
-            const avatar = gravatar.url(req.body.email, {
-                s: '200', // Size
-                r: 'pg', // Rating
-                d: 'mm' // Default
-            });
-
-            const newUser = new User({
-                info: {
-                    firstName: req.body.name,
-                    email: req.body.email,
-                    avatar,
-                    password: req.body.password
-                }
-            });
-
-            bcrypt.genSalt(10, (err, salt) => {
-                bcrypt.hash(newUser.info.password, salt, (err, hash) => {
-                    if (err) throw err;
-
-                    newUser.info.password = hash;
-                    newUser
-                        .save()
-                        .then((user) => res.json(user))
-                        .catch((err) => console.log(err));
+            if (user) {
+                var errors = 'Email already exists';
+                return res.status(400).json(errors);
+            } else {
+                // Get the gravatar
+                const avatar = gravatar.url(req.body.email, {
+                    s: '200', // Size
+                    r: 'pg', // Rating
+                    d: 'mm' // Default
                 });
-            });
-        }
-    });
+
+                const newUser = new User({
+                    email,
+                    info: {
+                        firstName: req.body.name,
+                        email: req.body.email,
+                        avatar,
+                        password: req.body.password
+                    }
+                });
+
+                bcrypt.genSalt(10, (err, salt) => {
+                    bcrypt.hash(newUser.info.password, salt, (err, hash) => {
+                        if (err) throw err;
+
+                        newUser.info.password = hash;
+                        newUser
+                            .save()
+                            .then((user) => res.json(user))
+                            .catch((err) => console.log(err));
+                    });
+                });
+            }
+        });
 });
 
 
@@ -61,9 +62,10 @@ router.post('/register', (req, res) => {
 router.post('/login', (req, res) => {
 
     const password = req.body.password;
+    const email = req.body.email.toLowerCase();
 
     User.findOne(
-        { "info.email": req.body.email }
+        { email }
     ).then((user) => {
 
         if (!user) {
