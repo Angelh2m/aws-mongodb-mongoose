@@ -14,7 +14,9 @@ const { User } = require('../../schemas/User');
 // @desc    Register route
 // @access  Public
 router.post('/register', (req, res) => {
-    let email = req.body.email.toLowerCase();
+    const email = req.body.email ? req.body.email.toLowerCase().trim() : '';
+
+    if (email === '') { return res.status(400).json({ ok: false, message: 'No valid email' }) }
 
     User.findOne({ email })
         .then((user) => {
@@ -24,7 +26,7 @@ router.post('/register', (req, res) => {
                 return res.status(400).json(errors);
             } else {
                 // Get the gravatar
-                const avatar = gravatar.url(req.body.email, {
+                const avatar = gravatar.url(email, {
                     s: '200', // Size
                     r: 'pg', // Rating
                     d: 'mm' // Default
@@ -32,19 +34,19 @@ router.post('/register', (req, res) => {
 
                 const newUser = new User({
                     email,
+                    password: req.body.password,
                     info: {
                         firstName: req.body.name,
-                        email: req.body.email,
                         avatar,
-                        password: req.body.password
                     }
                 });
 
                 bcrypt.genSalt(10, (err, salt) => {
-                    bcrypt.hash(newUser.info.password, salt, (err, hash) => {
-                        if (err) throw err;
+                    bcrypt.hash(newUser.password, salt, (err, hash) => {
 
-                        newUser.info.password = hash;
+                        if (err) { return res.json(err) }
+
+                        newUser.password = hash;
                         newUser
                             .save()
                             .then((user) => res.json(user))
@@ -62,47 +64,46 @@ router.post('/register', (req, res) => {
 router.post('/login', (req, res) => {
 
     const password = req.body.password;
-    const email = req.body.email.toLowerCase();
+    const email = req.body.email ? req.body.email.toLowerCase().trim() : '';
 
-    User.findOne(
-        { email }
-    ).then((user) => {
+    User.findOne({ email })
+        .then((user) => {
 
-        if (!user) {
-            return res.status(404).json({
-                email: 'User not found'
+            if (!user) {
+                return res.status(404).json({
+                    email: 'User not found'
+                });
+            }
+
+            // Check if the password is correct
+            bcrypt.compare(password, user.password).then((isMatch) => {
+                if (isMatch) {
+                    // User match
+                    const payload = {
+                        id: user.id,
+                        name: user.info.name,
+                        avatar: user.info.avatar
+                    }; // Create jwt payload
+
+                    // Sign the token
+                    jwt.sign(payload, keys.secretOrKey, {
+                        expiresIn: 3600
+                    }, (err, token) => {
+                        return res.json({
+                            success: true,
+                            token: `Bearer ${token}`
+                        })
+                    });
+                }
+
+                if (!isMatch) {
+                    return res.status(400).json({
+                        password: 'Incorrect password'
+                    });
+                }
+
             });
-        }
-
-        // Check if the password is correct
-        bcrypt.compare(password, user.info.password).then((isMatch) => {
-            if (isMatch) {
-                // User match
-                const payload = {
-                    id: user.id,
-                    name: user.info.name,
-                    avatar: user.info.avatar
-                }; // Create jwt payload
-
-                // Sign the token
-                jwt.sign(payload, keys.secretOrKey, {
-                    expiresIn: 3600
-                }, (err, token) => {
-                    return res.json({
-                        success: true,
-                        token: `Bearer ${token}`
-                    })
-                });
-            }
-
-            if (!isMatch) {
-                return res.status(400).json({
-                    password: 'Incorrect password'
-                });
-            }
-
-        });
-    }).catch(err => err)
+        }).catch(err => err)
 });
 
 
@@ -113,7 +114,7 @@ router.get('/profile', passport.authenticate('jwt', {
     session: false
 }),
     (req, res) => {
-        req.user.password = ":)";
+        req.user.password = ":) Encrypted!";
         res.json({
             user: req.user
         })

@@ -6,13 +6,20 @@ const cors = require('cors');
 const { keys } = require('./keys');
 const passport = require('passport');
 const mongoose = require('mongoose');
+// Routes
 const users = require('./routes/api/usersRegistration')
 const recover = require('./routes/api/userRecover')
+const update = require('./routes/api/userUpdates')
 
 /* *
  *  Set up cors
  */
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({ origin: true, credentials: true, methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS", }));
+app.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "PUT, GET, POST, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
 
 /* *
  *  Use the express.json instead of bodyparser
@@ -36,6 +43,7 @@ require('./config/passport-google')(passport);
 
 app.use('/api', users);
 app.use('/api', recover);
+app.use('/api', update);
 
 // @Routes 
 //  Register a new user => api/register
