@@ -1,11 +1,9 @@
 const express = require('express');
 const router = express.Router();
-
 // const gravatar = require('gravatar');
 // const bcrypt = require('bcryptjs');
 // const jwt = require('jsonwebtoken');
 const passport = require('passport');
-
 // const { keys } = require('../../keys'); 
 const { User } = require('../../schemas/User');
 
@@ -13,27 +11,32 @@ const { User } = require('../../schemas/User');
 // @route   GET api/users/current
 // @desc    Return current user // Protected route using token
 // @access  Private
-router.put('/user', passport.authenticate('jwt', { session: false }),
+router.put('/make-appointment', passport.authenticate('jwt', { session: false }),
     (req, res) => {
 
-        let email = req.user.email;
-        const newUserData = JSON.parse(req.body.updateUserData);
+        let payload = {
+            date: req.body.date,
+            surgery: req.body.surgery,
+            doctor: req.body.doctor,
+            specialty: req.body.specialty,
+            address: req.body.address,
+            confirmed: req.body.confirmed
+        }
+
+        console.log(payload);
+
         console.log('----------------------------------');
 
-        const cleanData = newUserData;
-
-        User.findOne({ email })
+        User.findOne({ _id: req.user.id })
             .then((user) => {
 
-                user.info = {
-                    ...user.info,
-                    ...cleanData
-                }
+                user.appointments.push(payload);
+                console.log(user.appointments);
 
                 user.save().then(newUpdate => {
                     return res.json({
                         ok: true,
-                        user: newUpdate.info
+                        user: newUpdate.appointments
                     });
 
                 }).catch(err => console.log(err))

@@ -78,6 +78,14 @@ router.post('/forgot-password', (req, res) => {
         }).catch(err => err)
 });
 
+// router.get('/new-password/:token', (req, res) => {
+//     const token = req.params.token;
+//     var decoded = jwtDecode(token);
+//     console.log(decoded);
+//     // const email = req.body.email ? req.body.email.toLowerCase().trim() : '';
+//     const email = req.body.password.user;
+// })
+
 // @route   POST api/new-password
 // @desc    Return current user // Protected route using token
 // @send    token, email, password
@@ -86,6 +94,10 @@ router.post('/new-password', (req, res) => {
     const token = req.body.token;
     const email = req.body.email ? req.body.email.toLowerCase().trim() : '';
     const newPassword = req.body.password;
+
+    if (!newPassword) {
+        return res.json({ ok: false })
+    }
 
     User.findOne({ email }).then((user) => {
 

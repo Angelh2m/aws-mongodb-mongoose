@@ -76,33 +76,34 @@ router.post('/login', (req, res) => {
             }
 
             // Check if the password is correct
-            bcrypt.compare(password, user.password).then((isMatch) => {
-                if (isMatch) {
-                    // User match
-                    const payload = {
-                        id: user.id,
-                        name: user.info.name,
-                        avatar: user.info.avatar
-                    }; // Create jwt payload
+            bcrypt.compare(password, user.password)
+                .then((isMatch) => {
+                    if (isMatch) {
+                        // User match
+                        const payload = {
+                            id: user.id,
+                            name: user.info.name,
+                            avatar: user.info.avatar
+                        }; // Create jwt payload
 
-                    // Sign the token
-                    jwt.sign(payload, keys.secretOrKey, {
-                        expiresIn: 3600
-                    }, (err, token) => {
-                        return res.json({
-                            success: true,
-                            token: `Bearer ${token}`
-                        })
-                    });
-                }
+                        // Sign the token
+                        jwt.sign(payload, keys.secretOrKey, {
+                            expiresIn: 21600,
+                        }, (err, token) => {
+                            return res.json({
+                                success: true,
+                                token: `Bearer ${token}`
+                            })
+                        });
+                    }
 
-                if (!isMatch) {
-                    return res.status(400).json({
-                        password: 'Incorrect password'
-                    });
-                }
+                    if (!isMatch) {
+                        return res.status(400).json({
+                            password: 'Incorrect password'
+                        });
+                    }
 
-            });
+                }).catch(err => err)
         }).catch(err => err)
 });
 
